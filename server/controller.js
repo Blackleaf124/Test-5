@@ -23,11 +23,11 @@ module.exports = {
             );
 
             create table cities (
-                city_id serial primary key
-                name varchar
-                rating integer
+                city_id serial primary key,
+                name varchar,
+                rating integer,
                 country_id integer references countries(country_id)
-            )
+            );
 
             insert into countries (name)
             values ('Afghanistan'),
@@ -239,9 +239,11 @@ module.exports = {
         .catch(err => console.log(err))
     },
     createCity: (req, res) => {
+        const { name, rating, countryId } = req.body
+
         sequelize.query(`
-        INSERT INTO cities (name, rating, countryId)
-        VALUES (${cities.name}, ${rating}, ${countryId})
+        INSERT INTO cities (name, rating, country_id)
+        VALUES ('${name}', ${rating}, ${countryId});
         `)
         .then((dbRes) => {
             res.status(200).send(dbRes[0])
@@ -250,17 +252,21 @@ module.exports = {
     },
     getCities: (req, res) => {
         sequelize.query(`
-        SELECT * FROM countries
-        JOIN cities
-        ON countries.country_id = cities.country_id
-        ORDER BY rating desc;
+        SELECT city_id, cities.name AS city, rating, countries.country_id, countries.name AS country
+        FROM cities
+        JOIN countries
+        ON cities.country_id = countries.country_id
         `)
         .then(dbRes => res.status(200).send(dbRes[0]))
         .catch(err => console.log(err))
     },
     deleteCity: (req, res) => {
+        const { id } = req.params
+        
         sequelize.query(`
-        DELETE FROM cities WHERE name = ${cities.name};
+        DELETE FROM cities WHERE city_id = ${id};
         `)
+        .then(dbRes => res.status(200).send(dbRes[0]))
+        .catch(err => console.log(err))
     }
 }
